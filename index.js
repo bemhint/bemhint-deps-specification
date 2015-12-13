@@ -125,12 +125,13 @@ var validationRules = {
                 }
             } else if (toType(elems) === 'object') {
                 Object.keys(elems).forEach(function(field) {
-                    var fieldValidation = validationRules[field].valueValidation(elems[field]);
+                    if (validationRules[field]) {
+                        var fieldErr = validationRules[field].valueValidation((elems[field]));
 
-                    if ((fieldValidation || []).length) {
-                        errors.push(fieldValidation);
+                        (fieldErr || []).length && (errors.push(fieldErr));
+                    } else if (!~validDeclFields.indexOf(field)) {
+                        errors.push('Invalid field ('+ field +') in declaration');
                     }
-
                 }, this);
             } else if (toType(elems) === 'array') {
                 var arrErr = simpleArrayWithStringValidation(elems, 'elems');
@@ -330,13 +331,11 @@ var validator = {
                     errors.push('Invalid field ('+ field +') in declaration');
                 } else {
                     if (validationRules[field]) {
-                        if (validationRules[field]) {
-                            var fieldErr = validationRules[field].valueValidation((decl[field]));
+                        var fieldErr = validationRules[field].valueValidation((decl[field]));
 
-                            (fieldErr || []).length && (errors.push(fieldErr));
-                        } else if (!~validDeclFields.indexOf(field)) {
-                            errors.push('Invalid field ('+ field +') in declaration');
-                        }
+                        (fieldErr || []).length && (errors.push(fieldErr));
+                    } else if (!~validDeclFields.indexOf(field)) {
+                        errors.push('Invalid field ('+ field +') in declaration');
                     }
                 }
             }, this);
