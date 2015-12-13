@@ -98,8 +98,10 @@ var validationRules = {
                 if (errors.length) {
                     return errors;
                 }
-            } else {
-                return simpleStringValidation(block, 'block');
+            } else if(toType(block) !== 'string') {
+                var blockValType = toType(block);
+
+                return 'Invalid block declaration type ('+ blockValType +'), expected string or object';
             }
         }
     },
