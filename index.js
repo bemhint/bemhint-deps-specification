@@ -31,13 +31,22 @@
 // Определить формат сообщения для ошибок
 
 /**
+ * Helper to recognize type of variable
+ * @param obj
+ * @returns {string}
+ */
+var toType = function(obj) {
+  return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase()
+};
+
+/**
  * String validation helper, that throw exceptions if variable is not a string
  * @param val
  * @param [fieldName]
  * @returns {Boolean|String}
  */
 var simpleStringValidation = function(val, fieldName) {
-    var valueType = typeof val;
+    var valueType = toType(val);
 
     if (valueType !== 'string') {
         return fieldName ?
@@ -54,7 +63,7 @@ var simpleStringValidation = function(val, fieldName) {
  */
 var simpleArrayWithStringValidation = function(arr, fieldName) {
     var haveErr = arr.some(function(item) {
-        return typeof item !== 'string';
+        return toType(item) !== 'string';
     });
 
     if (haveErr) {
@@ -74,7 +83,7 @@ var validationRules = {
         valueValidation: function(block) {
             // If we got block in object type notation, like this:
             // { tech : 'bemhtml', block : { block : 'link', mods : { pseudo : true } } }
-            if (block instanceof Object && block.length === undefined) {
+            if (toType(block) === 'object') {
                 var errors = [];
 
                 Object.keys(block).forEach(function(field) {
@@ -105,13 +114,13 @@ var validationRules = {
         valueValidation: function(elems) {
             var errors = [];
 
-            if (typeof elems === 'string') {
+            if (toType(elems) === 'string') {
                 var strValidation = simpleStringValidation(elems, 'elems');
 
                 if (strValidation) {
                     errors.push(strValidation);
                 }
-            } else if (elems instanceof Object && elems.length === undefined) {
+            } else if (toType(elems) === 'object') {
                 Object.keys(elems).forEach(function(field) {
                     var fieldValidation = (validationRules[field] || {}).valueValidation(elems[field]);
 
@@ -120,12 +129,12 @@ var validationRules = {
                     }
 
                 }, this);
-            } else if (Array.isArray(elems)) {
+            } else if (toType(elems) === 'array') {
                 var arrErr = simpleArrayWithStringValidation(elems, 'elems');
 
                 arrErr && errors.push(arrErr);
             } else {
-                var elemsValType = typeof elems;
+                var elemsValType = toType(elems);
 
                 errors.push('Invalid elems declaration type ('+ elemsValType +'), expected string, array or object');
             }
@@ -151,11 +160,11 @@ var validationRules = {
                 Object.keys(mods).forEach(function(field) {
                     var innerValue = mods[field];
 
-                    if (Array.isArray(innerValue)) {
+                    if (toType(innerValue) === 'array') {
                         var arrErr = simpleArrayWithStringValidation(innerValue, 'mods > ' + field);
 
                         arrErr && errors.push(arrErr);
-                    } else if (typeof innerValue !== 'boolean') { // boolean value are valid, so skip it
+                    } else if (toType(innerValue) !== 'boolean') { // boolean value are valid, so skip it
                         var fieldErr = simpleStringValidation(innerValue, 'mods > ' + field);
 
                         if (fieldErr) {
@@ -163,12 +172,12 @@ var validationRules = {
                         }
                     }
                 }, this);
-            } else if (Array.isArray(mods)) {
+            } else if (toType(mods) === 'array') {
                 var arrErr = simpleArrayWithStringValidation(mods, 'mods');
 
                 arrErr && errors.push(arrErr);
             } else {
-                var modsValType = typeof mods;
+                var modsValType = toType(mods);
 
                 errors.push('Invalid mods declaration type ('+ modsValType +'), expected array or object');
             }
@@ -181,7 +190,7 @@ var validationRules = {
 
     'val': {
         valueValidation: function(val) {
-            if (typeof val !== 'boolean') { // boolean value are valid, so skip it
+            if (toType(val) !== 'boolean') { // boolean value are valid, so skip it
                 return simpleStringValidation(val, 'val');
             }
         }
@@ -197,20 +206,20 @@ var validationRules = {
         valueValidation: function(mustDeps) {
             var errors = [];
 
-            if (Array.isArray(mustDeps)) {
+            if (toType(mustDeps) === 'array') {
                 mustDeps.forEach(function(decl) {
-                    if (typeof decl !== 'string') { // short string declaration are valid
+                    if (toType(decl) !== 'string') { // short string declaration are valid
                         var innerDeclsErrors = validator.validateDeclFields(decl, validDeclFields);
 
                         (innerDeclsErrors || []).length && errors.push(innerDeclsErrors);
                     }
                 }, this);
-            } else if (typeof mustDeps === 'object' && mustDeps.length === undefined) {
+            } else if (toType(mustDeps) === 'object' && mustDeps.length === undefined) {
                 var declErrors = validator.validateDeclFields(mustDeps, validDeclFields);
 
                 (declErrors || []).length && errors.push(declErrors);
-            } else if (typeof mustDeps !== 'string') { // short string declaration are valid
-                var declType = typeof mustDeps;
+            } else if (toType(mustDeps) !== 'string') { // short string declaration are valid
+                var declType = toType(mustDeps);
 
                 errors.push('Invalid declaration type ('+ declType +'), expected string, array or object');
             }
@@ -225,20 +234,20 @@ var validationRules = {
         valueValidation:function(shouldDeps) {
             var errors = [];
 
-            if (Array.isArray(shouldDeps)) {
+            if (toType(shouldDeps) === 'array') {
                 shouldDeps.forEach(function(decl) {
-                    if (typeof decl !== 'string') { // short string declaration are valid
+                    if (toType(decl) !== 'string') { // short string declaration are valid
                         var innerDeclsErrors = validator.validateDeclFields(decl, validDeclFields);
 
                         (innerDeclsErrors || []).length && errors.push(innerDeclsErrors);
                     }
                 }, this);
-            } else if (typeof shouldDeps === 'object' && shouldDeps.length === undefined) {
+            } else if (toType(shouldDeps) === 'object') {
                 var declErrors = validator.validateDeclFields(shouldDeps, validDeclFields);
 
                 (declErrors || []).length && errors.push(declErrors);
-            } else if (typeof shouldDeps !== 'string') { // short string declaration are valid
-                var declType = typeof shouldDeps;
+            } else if (toType(shouldDeps) !== 'string') { // short string declaration are valid
+                var declType = toType(shouldDeps);
 
                 errors.push('Invalid declaration type ('+ declType +'), expected string, array or object');
             }
@@ -265,6 +274,8 @@ var validDeclFields = [
     'include'
 ];
 
+var _ = require('lodash');
+
 var validator = {
 
     validate: function(deps) {
@@ -274,13 +285,15 @@ var validator = {
             var declValidationRes = this.validateDepsDeclaration(decl);
 
             if (declValidationRes) {
-                validationRes.push(declValidationRes);
+                validationRes = validationRes.concat(declValidationRes);
             }
         }, this);
 
         if (validationRes.length) {
-            //console.log(validationRes.toString());
-            return validationRes.toString();
+
+            //console.log(JSON.stringify(_.flattenDeep(validationRes), null, 4));
+            // Make Array of Arrays flatter for bemhint :)
+            return _.flattenDeep(validationRes);
         } else {
             return false;
             //console.log('All deps is valid!');
@@ -294,21 +307,21 @@ var validator = {
             if (validationRules[field]) {
                 var fieldErr = validationRules[field].valueValidation((decl[field]));
 
-                (fieldErr || []).length && (errors.push(fieldErr.join('\n')));
+                (fieldErr || []).length && (errors.push(fieldErr));
             } else if (!~validDeclFields.indexOf(field)) {
                 errors.push('Invalid field ('+ field +') in declaration');
             }
         });
 
         if (errors.length) {
-            return errors.join('\n');
+            return errors;
         }
     },
 
     validateDeclFields: function(decl, validFields) {
         var errors = [];
 
-        if(typeof decl === 'object') {
+        if(toType(decl) === 'object') {
             Object.keys(decl).forEach(function(field) {
                 if (!~validFields.indexOf(field)) {
                     errors.push('Invalid field ('+ field +') in declaration');
@@ -323,7 +336,7 @@ var validator = {
                 }
             }, this);
         } else {
-            var declType = typeof decl;
+            var declType = toType(decl);
 
             errors.push('Invalid declaration type ('+ declType +'), expected object');
         }
@@ -347,20 +360,19 @@ validator.validate(
 );
 
 module.exports = {
-    // TODO: в бемхинте нет возможности не указывать технологии
     forEntityTech: function (tech, techsConfig, entity) {
         if (tech.content) {
             var deps = vm.runInThisContext(tech.content),
                 validateRes = validator.validate(deps);
 
             if (validateRes) {
-                var error = {
-                    msg: 'Deps validation',
-                    tech: tech.tech,
-                    value: validateRes
-                };
-
-                entity.addError(error);
+                validateRes.forEach(function(error) {
+                    entity.addError({
+                        msg: 'Deps validation',
+                        tech: tech.tech,
+                        value: error
+                    });
+                });
             }
         }
     }
