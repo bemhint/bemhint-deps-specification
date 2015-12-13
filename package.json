@@ -1,0 +1,18 @@
+{
+  "name": "bemhint-plugin-validate-deps",
+  "version": "1.0.0",
+  "description": "validate deps by spec. from bem.info",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "bem"
+  ],
+  "author": "Alex Belyanskii",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git@github.yandex-team.ru:belyanskii/bemhint-plugin-validate-deps.git"
+  }
+}
