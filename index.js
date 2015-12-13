@@ -160,7 +160,7 @@ var validationRules = {
             var errors = [];
 
             // If mods in object type notation, like this - { disabled : true, focused : 'yes' }
-            if (mods instanceof Object && mods.length === undefined) {
+            if (toType(mods) === 'object') {
                 Object.keys(mods).forEach(function(field) {
                     var innerValue = mods[field];
 
