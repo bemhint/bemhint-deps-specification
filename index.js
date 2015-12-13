@@ -33,28 +33,34 @@
 /**
  * String validation helper, that throw exceptions if variable is not a string
  * @param val
+ * @param [fieldName]
  * @returns {Boolean|String}
  */
-var simpleStringValidation = function(val) {
+var simpleStringValidation = function(val, fieldName) {
     var valueType = typeof val;
 
     if (valueType !== 'string') {
-        return 'Invalid type: '+ valueType +' (expected string)';
+        return fieldName ?
+            'Invalid type at field "'+fieldName+'": '+ valueType +' (expected string)' :
+            'Invalid type: '+ valueType +' (expected string)';
     }
 };
 
 /**
  * Array validation helper, that throw exceptions if item is not a string
  * @param {Array} arr
+ * @param {String} [fieldName]
  * @returns {String}
  */
-var simpleArrayWithStringValidation = function(arr) {
+var simpleArrayWithStringValidation = function(arr, fieldName) {
     var haveErr = arr.some(function(item) {
         return typeof item !== 'string';
     });
 
     if (haveErr) {
-        return 'Invalid array item type: expected string';
+        return fieldName ?
+            'Invalid array item type in "'+fieldName+'": expected string' :
+            'Invalid array item type: expected string';
     }
 };
 
@@ -69,24 +75,30 @@ var validationRules = {
             // If we got block in object type notation, like this:
             // { tech : 'bemhtml', block : { block : 'link', mods : { pseudo : true } } }
             if (val instanceof Object && val.length === undefined) {
+                var errors = [];
+
                 Object.keys(val).forEach(function(field) {
-                    Object.keys(val).forEach(function(field) {
-                        var fieldValidation = (validationRules[field] || {}).valueValidation(val[field]);
+                    var fieldValidation = (validationRules[field] || {}).valueValidation(val[field]);
 
-                        if ((fieldValidation || []).length) {
-                            errors.push(fieldValidation);
-                        }
+                    if ((fieldValidation || []).length) {
+                        errors.push(fieldValidation);
+                    }
 
-                    }, this)
-                });
+                }, this);
+
+                if (errors.length) {
+                    return errors;
+                }
             } else {
-                simpleStringValidation(val);
+                return simpleStringValidation(val, 'block');
             }
         }
     },
 
     elem: {
-        valueValidation: simpleStringValidation
+        valueValidation: function(val) {
+            return simpleStringValidation(val, 'elem');
+        }
     },
 
     elems: {
@@ -94,7 +106,7 @@ var validationRules = {
             var errors = [];
 
             if (typeof val === 'string') {
-                var strValidation = simpleStringValidation(val);
+                var strValidation = simpleStringValidation(val, 'elems');
 
                 if (strValidation) {
                     errors.push(strValidation);
@@ -109,7 +121,7 @@ var validationRules = {
 
                 }, this);
             } else if (Array.isArray(val)) {
-                var arrErr = simpleArrayWithStringValidation(val);
+                var arrErr = simpleArrayWithStringValidation(val, 'elems');
 
                 arrErr && errors.push(arrErr);
             } else {
@@ -123,7 +135,9 @@ var validationRules = {
     },
 
     'mod': {
-        valueValidation: simpleStringValidation
+        valueValidation: function(val) {
+            return simpleStringValidation(val, 'mod');
+        }
     },
 
     'mods': {
@@ -136,11 +150,11 @@ var validationRules = {
                     var innerValue = val[field];
 
                     if (Array.isArray(innerValue)) {
-                        var arrErr = simpleArrayWithStringValidation(innerValue);
+                        var arrErr = simpleArrayWithStringValidation(innerValue, 'mods > ' + field);
 
                         arrErr && errors.push(arrErr);
                     } else if (typeof innerValue !== 'boolean') { // boolean value are valid, so skip it
-                        var fieldErr = simpleStringValidation(innerValue);
+                        var fieldErr = simpleStringValidation(innerValue, 'mods > ' + field);
 
                         if (fieldErr) {
                             errors.push(fieldErr);
@@ -148,7 +162,7 @@ var validationRules = {
                     }
                 }, this);
             } else if (Array.isArray(val)) {
-                var arrErr = simpleArrayWithStringValidation(val);
+                var arrErr = simpleArrayWithStringValidation(val, 'mods');
 
                 arrErr && errors.push(arrErr);
             } else {
@@ -164,13 +178,15 @@ var validationRules = {
     'val': {
         valueValidation: function(val) {
             if (typeof val !== 'boolean') { // boolean value are valid, so skip it
-                return simpleStringValidation(val);
+                return simpleStringValidation(val, 'val');
             }
         }
     },
 
     'tech': {
-        valueValidation: simpleStringValidation
+        valueValidation: function(val) {
+            return simpleStringValidation(val, 'tech');
+        }
     }
 
 };
@@ -313,7 +329,7 @@ validator.validate(
     [{
         tech : 'spec.js',
         mustDeps : [
-            { tech : 'bemhtml', block : { block : 'link', mods : { pseudo : true } } }
+            { block : 'jquery', elem : 'event', mods : { type : ['pointer', null] } }
         ]
     }]
 );
