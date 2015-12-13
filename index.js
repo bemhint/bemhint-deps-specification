@@ -71,14 +71,14 @@ var simpleArrayWithStringValidation = function(arr, fieldName) {
 var validationRules = {
 
     block: {
-        valueValidation: function(val) {
+        valueValidation: function(block) {
             // If we got block in object type notation, like this:
             // { tech : 'bemhtml', block : { block : 'link', mods : { pseudo : true } } }
-            if (val instanceof Object && val.length === undefined) {
+            if (block instanceof Object && block.length === undefined) {
                 var errors = [];
 
-                Object.keys(val).forEach(function(field) {
-                    var fieldValidation = (validationRules[field] || {}).valueValidation(val[field]);
+                Object.keys(block).forEach(function(field) {
+                    var fieldValidation = (validationRules[field] || {}).valueValidation(block[field]);
 
                     if ((fieldValidation || []).length) {
                         errors.push(fieldValidation);
@@ -90,64 +90,66 @@ var validationRules = {
                     return errors;
                 }
             } else {
-                return simpleStringValidation(val, 'block');
+                return simpleStringValidation(block, 'block');
             }
         }
     },
 
     elem: {
-        valueValidation: function(val) {
-            return simpleStringValidation(val, 'elem');
+        valueValidation: function(elem) {
+            return simpleStringValidation(elem, 'elem');
         }
     },
 
     elems: {
-        valueValidation: function(val) {
+        valueValidation: function(elems) {
             var errors = [];
 
-            if (typeof val === 'string') {
-                var strValidation = simpleStringValidation(val, 'elems');
+            if (typeof elems === 'string') {
+                var strValidation = simpleStringValidation(elems, 'elems');
 
                 if (strValidation) {
                     errors.push(strValidation);
                 }
-            } else if (val instanceof Object && val.length === undefined) {
-                Object.keys(val).forEach(function(field) {
-                    var fieldValidation = (validationRules[field] || {}).valueValidation(val[field]);
+            } else if (elems instanceof Object && elems.length === undefined) {
+                Object.keys(elems).forEach(function(field) {
+                    var fieldValidation = (validationRules[field] || {}).valueValidation(elems[field]);
 
                     if ((fieldValidation || []).length) {
                         errors.push(fieldValidation);
                     }
 
                 }, this);
-            } else if (Array.isArray(val)) {
-                var arrErr = simpleArrayWithStringValidation(val, 'elems');
+            } else if (Array.isArray(elems)) {
+                var arrErr = simpleArrayWithStringValidation(elems, 'elems');
 
                 arrErr && errors.push(arrErr);
             } else {
-                var elemsValType = typeof val;
+                var elemsValType = typeof elems;
 
                 errors.push('Invalid elems declaration type ('+ elemsValType +'), expected string, array or object');
             }
 
-            return errors.length ? errors : true;
+            if (errors.length) {
+                return errors;
+            }
         }
     },
 
     'mod': {
-        valueValidation: function(val) {
-            return simpleStringValidation(val, 'mod');
+        valueValidation: function(mod) {
+            return simpleStringValidation(mod, 'mod');
         }
     },
 
     'mods': {
-        valueValidation: function(val) {
+        valueValidation: function(mods) {
             var errors = [];
 
             // If mods in object type notation, like this - { disabled : true, focused : 'yes' }
-            if (val instanceof Object && val.length === undefined) {
-                Object.keys(val).forEach(function(field) {
-                    var innerValue = val[field];
+            if (mods instanceof Object && mods.length === undefined) {
+                Object.keys(mods).forEach(function(field) {
+                    var innerValue = mods[field];
 
                     if (Array.isArray(innerValue)) {
                         var arrErr = simpleArrayWithStringValidation(innerValue, 'mods > ' + field);
@@ -161,17 +163,19 @@ var validationRules = {
                         }
                     }
                 }, this);
-            } else if (Array.isArray(val)) {
-                var arrErr = simpleArrayWithStringValidation(val, 'mods');
+            } else if (Array.isArray(mods)) {
+                var arrErr = simpleArrayWithStringValidation(mods, 'mods');
 
                 arrErr && errors.push(arrErr);
             } else {
-                var modsValType = typeof val;
+                var modsValType = typeof mods;
 
                 errors.push('Invalid mods declaration type ('+ modsValType +'), expected array or object');
             }
 
-            return errors.length ? errors : true;
+            if (errors.length) {
+                return errors;
+            }
         }
     },
 
@@ -184,8 +188,64 @@ var validationRules = {
     },
 
     'tech': {
-        valueValidation: function(val) {
-            return simpleStringValidation(val, 'tech');
+        valueValidation: function(tech) {
+            return simpleStringValidation(tech, 'tech');
+        }
+    },
+
+    'mustDeps' : {
+        valueValidation: function(mustDeps) {
+            var errors = [];
+
+            if (Array.isArray(mustDeps)) {
+                mustDeps.forEach(function(decl) {
+                    if (typeof decl !== 'string') { // short string declaration are valid
+                        var innerDeclsErrors = validator.validateDeclFields(decl, validDeclFields);
+
+                        (innerDeclsErrors || []).length && errors.push(innerDeclsErrors);
+                    }
+                }, this);
+            } else if (typeof mustDeps === 'object' && mustDeps.length === undefined) {
+                var declErrors = validator.validateDeclFields(mustDeps, validDeclFields);
+
+                (declErrors || []).length && errors.push(declErrors);
+            } else if (typeof mustDeps !== 'string') { // short string declaration are valid
+                var declType = typeof mustDeps;
+
+                errors.push('Invalid declaration type ('+ declType +'), expected string, array or object');
+            }
+
+            if (errors.length) {
+                return errors;
+            }
+        }
+    },
+
+    'shouldDeps' : {
+        valueValidation:function(shouldDeps) {
+            var errors = [];
+
+            if (Array.isArray(shouldDeps)) {
+                shouldDeps.forEach(function(decl) {
+                    if (typeof decl !== 'string') { // short string declaration are valid
+                        var innerDeclsErrors = validator.validateDeclFields(decl, validDeclFields);
+
+                        (innerDeclsErrors || []).length && errors.push(innerDeclsErrors);
+                    }
+                }, this);
+            } else if (typeof shouldDeps === 'object' && shouldDeps.length === undefined) {
+                var declErrors = validator.validateDeclFields(shouldDeps, validDeclFields);
+
+                (declErrors || []).length && errors.push(declErrors);
+            } else if (typeof shouldDeps !== 'string') { // short string declaration are valid
+                var declType = typeof shouldDeps;
+
+                errors.push('Invalid declaration type ('+ declType +'), expected string, array or object');
+            }
+
+            if (errors.length) {
+                return errors;
+            }
         }
     }
 
@@ -197,20 +257,6 @@ var validDeclFields = [
     'elems',
     'mod',
     'mods',
-    'val',
-    'tech',
-    'mustDeps',
-    'shouldDeps',
-    'noDeps',
-    'include'
-];
-
-var validInnerDeclFields = [
-    'block',
-    'elem',
-    'elems',
-    'mods',
-    'mod',
     'val',
     'tech',
     'mustDeps',
@@ -244,52 +290,18 @@ var validator = {
     validateDepsDeclaration: function(decl) {
         var errors = [];
 
-        if (decl) {
-            var declErr = this.validateDeclFields(decl, validDeclFields);
+        Object.keys(decl).forEach(function(field) {
+            if (validationRules[field]) {
+                var fieldErr = validationRules[field].valueValidation((decl[field]));
 
-            (declErr || []).length && errors.push(declErr.join('\n'));
-        }
-
-        if (decl['mustDeps']) {
-            var mustErr = this.validateSection(decl['mustDeps']);
-
-            (mustErr || []).length && (errors.push(mustErr.join('\n')));
-        }
-
-        if (decl['shouldDeps']) {
-            var shouldErr = this.validateSection(decl['shouldDeps']);
-
-            (shouldErr || []).length && errors.push(shouldErr.join('\n'));
-        }
+                (fieldErr || []).length && (errors.push(fieldErr.join('\n')));
+            } else if (!~validDeclFields.indexOf(field)) {
+                errors.push('Invalid field ('+ field +') in declaration');
+            }
+        });
 
         if (errors.length) {
             return errors.join('\n');
-        }
-    },
-
-    validateSection: function(section) {
-        var errors = [];
-
-        if (Array.isArray(section)) {
-            section.forEach(function(decl) {
-                if (typeof decl !== 'string') { // short string declaration are valid
-                    var innerDeclsErrors = this.validateDeclFields(decl, validInnerDeclFields);
-
-                    (innerDeclsErrors || []).length && errors.push(innerDeclsErrors);
-                }
-            }, this);
-        } else if (typeof section === 'object' && section.length === undefined) {
-            var declErrors = this.validateDeclFields(section, validInnerDeclFields);
-
-            (declErrors || []).length && errors.push(declErrors);
-        } else if (typeof section !== 'string') { // short string declaration are valid
-            var declType = typeof section;
-
-            errors.push('Invalid declaration type ('+ declType +'), expected string, array or object');
-        }
-
-        if (errors.length) {
-            return errors;
         }
     },
 
