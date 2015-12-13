@@ -87,12 +87,13 @@ var validationRules = {
                 var errors = [];
 
                 Object.keys(block).forEach(function(field) {
-                    var fieldValidation = (validationRules[field] || {}).valueValidation(block[field]);
+                    if (validationRules[field]) {
+                        var fieldErr = validationRules[field].valueValidation((block[field]));
 
-                    if ((fieldValidation || []).length) {
-                        errors.push(fieldValidation);
+                        (fieldErr || []).length && (errors.push(fieldErr));
+                    } else if (!~validDeclFields.indexOf(field)) {
+                        errors.push('Invalid field ('+ field +') in declaration');
                     }
-
                 }, this);
 
                 if (errors.length) {
@@ -124,7 +125,7 @@ var validationRules = {
                 }
             } else if (toType(elems) === 'object') {
                 Object.keys(elems).forEach(function(field) {
-                    var fieldValidation = (validationRules[field] || {}).valueValidation(elems[field]);
+                    var fieldValidation = validationRules[field].valueValidation(elems[field]);
 
                     if ((fieldValidation || []).length) {
                         errors.push(fieldValidation);
@@ -329,10 +330,12 @@ var validator = {
                     errors.push('Invalid field ('+ field +') in declaration');
                 } else {
                     if (validationRules[field]) {
-                        var fieldError = validationRules[field].valueValidation(decl[field]);
+                        if (validationRules[field]) {
+                            var fieldErr = validationRules[field].valueValidation((decl[field]));
 
-                        if ((fieldError || []).length) {
-                            errors.push(fieldError);
+                            (fieldErr || []).length && (errors.push(fieldErr));
+                        } else if (!~validDeclFields.indexOf(field)) {
+                            errors.push('Invalid field ('+ field +') in declaration');
                         }
                     }
                 }
@@ -371,7 +374,7 @@ module.exports = {
                 validateRes.forEach(function(error) {
                     entity.addError({
                         msg: 'Deps validation',
-                        tech: tech.tech,
+                        tech: 'deps.js',
                         value: error
                     });
                 });
