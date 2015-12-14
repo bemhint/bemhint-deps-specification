@@ -268,12 +268,10 @@ var validator = {
 
         if (validationRes.length) {
 
-            console.log(JSON.stringify(_.flattenDeep(validationRes), null, 4));
             // Make Array of Arrays flatter for bemhint :)
             return _.flattenDeep(validationRes);
         } else {
             return false;
-            //console.log('All deps is valid!');
         }
     },
 
