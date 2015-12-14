@@ -77,7 +77,12 @@ var validationRules = {
 
     elem: {
         valueValidation: function(elem) {
-            return simpleStringValidation(elem, 'elem');
+
+            if(toType(elem) === 'array') {
+                return simpleArrayWithStringValidation(elem, 'elem');
+            } else {
+                return simpleStringValidation(elem, 'elem');
+            }
         }
     },
 
@@ -263,7 +268,7 @@ var validator = {
 
         if (validationRes.length) {
 
-            //console.log(JSON.stringify(_.flattenDeep(validationRes), null, 4));
+            console.log(JSON.stringify(_.flattenDeep(validationRes), null, 4));
             // Make Array of Arrays flatter for bemhint :)
             return _.flattenDeep(validationRes);
         } else {
@@ -320,16 +325,11 @@ var validator = {
 
 };
 
-var vm = require('vm');
 
-validator.validate(
-    [{
-        tech : 'spec.js',
-        mustDeps : [
-            { block : 'jquery', elem : 'event', mods : { type : ['pointer', null] } }
-        ]
-    }]
-);
+/**
+ * Export plugin for bemhint
+ */
+var vm = require('vm');
 
 module.exports = {
     forEntityTech: function (tech, techsConfig, entity) {
