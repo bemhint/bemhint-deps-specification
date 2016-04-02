@@ -1,8 +1,8 @@
-# bemhint-plugin-validate-deps
+# bemhint-deps-specification
 
-## [Bemhint](https://github.com/bem/bemhint) plugin for validate deps.js files
+Plugin for [bemhint](https://github.com/bem/bemhint) which check `*.deps.js` to be written by [specification](https://en.bem.info/technology/deps/about/).
 
-### Config example
+## Config example
 
 ```json
 {
