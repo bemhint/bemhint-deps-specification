@@ -1,20 +1,26 @@
 {
   "name": "bemhint-deps-specification",
   "version": "1.0.0",
-  "description": "validate deps by spec. from bem.info",
-  "main": "lib/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [
-    "bem"
-  ],
+  "description": "Plugin for bemhint which checks *.deps.js to be written by specification",
   "author": "Sergey Berezhnoy <veged@ya.ru> (http://github.com/veged)",
   "repository": {
     "type": "git",
     "url": "git://github.com/bemhint/bemhint-deps-specification.git"
   },
+  "license": "MIT",
+  "main": "lib/index.js",
+  "keywords": [
+    "bemhint",
+    "plugin",
+    "deps"
+  ],
+  "peerDependencies": {
+    "bemhint": ">= 0.6.0 < 0.7.0"
+  },
   "dependencies": {
     "lodash": "^3.10.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   }
 }
