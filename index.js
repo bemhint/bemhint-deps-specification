@@ -112,7 +112,15 @@ function concatExpected(old, add, delim) {
 }
 
 module.exports = {
-    forEntityTech: function (tech, techsConfig, entity) {
+    configure: function() {
+        return {
+            techs: {
+                'deps.js': true
+            }
+        }
+    },
+
+    forEachTech: function(tech, entity) {
         tech.content && topLevelDepsValidation(
             vm.runInThisContext(tech.content), // TODO: catch errors
             '',
