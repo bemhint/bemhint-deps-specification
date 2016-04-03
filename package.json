@@ -7,16 +7,13 @@
     "type": "git",
     "url": "git://github.com/bemhint/bemhint-deps-specification.git"
   },
-  "license": "MIT",
-  "main": "lib/index.js",
   "keywords": [
     "bemhint",
     "plugin",
     "deps"
   ],
-  "peerDependencies": {
-    "bemhint": ">= 0.6.0 < 0.7.0"
-  },
+  "license": "MIT",
+  "main": "lib/index.js",
   "dependencies": {
     "lodash": "^3.10.1"
   },
