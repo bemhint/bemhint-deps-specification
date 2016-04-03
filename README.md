@@ -1,26 +1,21 @@
 # bemhint-deps-specification
 
-Plugin for [bemhint](https://github.com/bem/bemhint) which check `*.deps.js` to be written by [specification](https://en.bem.info/technology/deps/about/).
+Plugin for [bemhint](https://github.com/bemhint/bemhint) which check `*.deps.js` to be written by [specification](https://en.bem.info/technology/deps/about/).
 
 ## Config example
 
-```json
-{
-    "levels": [
-        "*.blocks"
+```js
+module.exports = {
+    levels: [
+        '*.blocks'
     ],
 
-    "excludePaths": [
-        "node_modueles/**"
+    excludePaths: [
+        'node_modueles/**'
     ],
 
-    "plugins": {
-        "bemhint-plugin-validate-deps": {
-            "techs": {
-                "deps.js": true
-            }
-        }
+    plugins: {
+        'bemhint-deps-specification': true
     }
 }
-
 ```

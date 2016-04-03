@@ -1,5 +1,5 @@
 {
-  "name": "bemhint-plugin-validate-deps",
+  "name": "bemhint-deps-specification",
   "version": "1.0.0",
   "description": "validate deps by spec. from bem.info",
   "main": "index.js",
@@ -9,11 +9,10 @@
   "keywords": [
     "bem"
   ],
-  "author": "Alex Belyanskii",
-  "license": "MIT",
+  "author": "Sergey Berezhnoy <veged@ya.ru> (http://github.com/veged)",
   "repository": {
     "type": "git",
-    "url": "git@github.yandex-team.ru:belyanskii/bemhint-plugin-validate-deps.git"
+    "url": "git://github.com/bemhint/bemhint-deps-specification.git"
   },
   "dependencies": {
     "lodash": "^3.10.1"
